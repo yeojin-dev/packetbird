@@ -1,17 +1,18 @@
 package com.yeojin.packetbird
 
+import java.util.concurrent.Executors
+
 fun mainThread() {
     while (true) {
         println("Hello Thread! ${Thread.currentThread().name}")
     }
 }
 
-fun main() {
-    val t = Thread(::mainThread)
-    t.name = "Test Thread"
-    t.isDaemon = true // t thread will die when main thread dies.
-    t.start()
-    t.join() // waiting for end of t
+fun main(args: Array<String>) {
+    val threadAmount = args[0].toInt()
+    val executor = Executors.newFixedThreadPool(threadAmount)
+    val worker = Runnable { mainThread() }
+    executor.execute(worker)
 
     println("Hello World!")
 }
