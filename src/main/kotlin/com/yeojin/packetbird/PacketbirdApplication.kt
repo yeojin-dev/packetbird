@@ -3,12 +3,22 @@ package com.yeojin.packetbird
 import java.util.concurrent.Executors
 import java.util.concurrent.FutureTask
 
-const val REPEAT_NUMBER = 10
+@Volatile // read data from memory(not cpu cache)
+var STOP = false
+
+const val MAIN_THREAD_RUNNING_TIME_MILLS = 100L
 
 fun mainThread() {
-    repeat(REPEAT_NUMBER) {
+    println("Thread starts!")
+
+    // The code below is dangerous! STOP isn't in sync with main thread. So situations below is possible.
+    // 1. While statement runs after STOP is set in true.
+    // 2. An optimizer ignores STOP condition.
+    while (!STOP) {
         println("Hello Thread! ${Thread.currentThread().name}")
     }
+    println("Thread ends!")
+    // Task does not end until the state is changed
 }
 
 fun main(args: Array<String>) {
@@ -19,6 +29,12 @@ fun main(args: Array<String>) {
 
     executor.submit(task1)
     executor.submit(task2)
+
+    Thread.sleep(MAIN_THREAD_RUNNING_TIME_MILLS)
+
+    // bug!
+    STOP = true
+    println("STOP from main")
 
     while (true) {
         println("Checking...")
