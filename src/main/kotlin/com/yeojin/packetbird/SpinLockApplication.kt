@@ -42,9 +42,29 @@ fun thread2() {
     }
 }
 
+val readWriteLock = Lock()
+
+fun threadL1() {
+    repeat(LOOP_COUNT) {
+        readWriteLock.writeLock()
+        readWriteLock.writeLock()
+        num++
+        readWriteLock.writeUnlock()
+        readWriteLock.writeUnlock()
+    }
+}
+
+fun threadL2() {
+    repeat(LOOP_COUNT) {
+        readWriteLock.writeLock()
+        num--
+        readWriteLock.writeUnlock()
+    }
+}
+
 fun main() {
-    val t1 = FutureTask<Int>(::thread1, 0)
-    val t2 = FutureTask<Int>(::thread2, 1)
+    val t1 = FutureTask<Int>(::threadL1, 0)
+    val t2 = FutureTask<Int>(::threadL2, 1)
 
     val threadPool = Executors.newFixedThreadPool(2)
     threadPool.submit(t1)
